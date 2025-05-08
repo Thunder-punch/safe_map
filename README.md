@@ -76,11 +76,44 @@
 ```
 safe_map/
 ├── app/                    # 페이지 컴포넌트
-├── components/            # 재사용 가능한 컴포넌트
-│   └── ui/               # UI 컴포넌트
-├── lib/                  # 유틸리티 함수
-├── public/              # 정적 파일
+├── components/             # 재사용 가능한 컴포넌트
+│   └── ui/                 # UI 컴포넌트
+├── data/                   # 데이터 및 전처리 스크립트
+│   ├── raw_data/           # 원본 데이터
+│   ├── preprocess_shelter_raw_to_aed_format.py
+│   ├── fill_coords_with_priority.py
+│   ├── shelter_all_aed_format_preprocessed.csv
+│   ├── AED_address_geocoded.csv
+│   └── ...                 # 기타 데이터 파일
+├── lib/                    # 유틸리티 함수 및 타입 정의
+│   ├── types/
+│   │   └── shelter.ts
+│   └── utils/
+│       ├── shelterDataPipeline.ts
+│       └── shelterDataProcessor.ts
+├── public/                 # 정적 파일
+├── scripts/                # 데이터 처리/배포 스크립트
+│   └── processShelterData.ts
+├── README.md
 └── ...
+```
+
+## 데이터/파일 흐름도
+
+```mermaid
+flowchart TD
+    subgraph 데이터_수집
+        A[data/raw_data/*.csv, *.xlsx]
+    end
+    A -->|전처리| B[data/preprocess_shelter_raw_to_aed_format.py]
+    B -->|통합/정제| C[data/shelter_all_aed_format_preprocessed.csv]
+    C -->|좌표 보완| D[data/fill_coords_with_priority.py]
+    D -->|좌표 채움| E[data/AED_address_geocoded.csv]
+    E -->|프론트엔드 데이터 활용| F[lib/utils/shelterDataPipeline.ts]
+    F --> G[lib/types/shelter.ts]
+    F --> H[app/, components/]
+    G --> H
+    H -->|지도/정보 표시| I[사용자 화면]
 ```
 
 ## 시작하기
@@ -124,35 +157,3 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
    git push origin feature/your-feature-name
    ```
 5. GitHub에서 Pull Request(PR)를 생성하여 코드 리뷰 및 병합을 요청합니다.
-
-## 데이터 흐름도
-
-```mermaid
-flowchart LR
-    subgraph Database
-        DB[PostgreSQL]
-        Docker[Docker]
-        Container[Container]
-        Docker --> Container
-        Container --> DB
-    end
-    subgraph Backend
-        Nest[NestJS Server]
-        Prisma[Prisma]
-        MQClient[RabbitMQ Client]
-        Nest -- ORM --> Prisma
-        Nest -- 메시지 큐 --> MQClient
-    end
-    subgraph Frontend
-        Next[Next.js App]
-        ShadCN[ShadCN]
-        Tailwind[TailwindCSS]
-        Next --> ShadCN
-        ShadCN --> Tailwind
-    end
-    FE[Frontend] -- HTTP Request --> API[Backend API]
-    API -- 메시지 큐잉 --> MQ[RabbitMQ]
-    API -- 데이터 조회 --> DB
-    MQ -- 비동기 처리 --> DB
-    API -- HTTP Response --> FE
-```
