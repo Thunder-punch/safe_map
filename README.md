@@ -124,3 +124,35 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
    git push origin feature/your-feature-name
    ```
 5. GitHub에서 Pull Request(PR)를 생성하여 코드 리뷰 및 병합을 요청합니다.
+
+## 데이터 흐름도
+
+```mermaid
+flowchart LR
+    subgraph Database
+        DB[PostgreSQL]
+        Docker[Docker]
+        Container[Container]
+        Docker --> Container
+        Container --> DB
+    end
+    subgraph Backend
+        Nest[NestJS Server]
+        Prisma[Prisma]
+        MQClient[RabbitMQ Client]
+        Nest -- ORM --> Prisma
+        Nest -- 메시지 큐 --> MQClient
+    end
+    subgraph Frontend
+        Next[Next.js App]
+        ShadCN[ShadCN]
+        Tailwind[TailwindCSS]
+        Next --> ShadCN
+        ShadCN --> Tailwind
+    end
+    FE[Frontend] -- HTTP Request --> API[Backend API]
+    API -- 메시지 큐잉 --> MQ[RabbitMQ]
+    API -- 데이터 조회 --> DB
+    MQ -- 비동기 처리 --> DB
+    API -- HTTP Response --> FE
+```
