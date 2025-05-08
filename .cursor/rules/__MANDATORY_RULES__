@@ -1,0 +1,24 @@
+### SharedCN Components
+
+- UI 컴포넌트는 `/components/ui` 디렉터리에서 관리합니다.
+- 컴포넌트 설치 명령어를 사용하여 합니다: `npm install @shadcn/ui`
+  - 예시: `npx shadcn-ui@latest add [component-name]`
+
+### Icons
+
+- 모든 아이콘은 Lucide React를 사용하여 합니다
+- 아이콘 임포트 방법: `import { IconName } from "lucide-react"`
+- 예시: `import { Search, Menu } from "lucide-react"`
+
+### Component Structure
+
+- 컴포넌트는 `/components` 디렉터리 내에 위치하여 합니다
+- UI 컴포넌트는 `/components/ui` 디렉터리에 위치하여 합니다
+- 페이지별 컴포넌트는 `/app` 디렉터리 내 해당 페이지에 위치하여 합니다
+
+### Best Practices
+
+- TypeScript 타입을 반드시 정의하여 합니다
+- 컴포넌트는 재사용 가능하도록 구현하여 합니다
+- npm을 패키지 매니저로 사용하여 합니다
+- ESLint와 Prettier를 사용하여 코드 스타일을 유지하여 합니다
