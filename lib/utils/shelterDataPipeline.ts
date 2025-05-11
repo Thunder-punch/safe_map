@@ -35,7 +35,7 @@ async function parseXLSXFile(filePath: string): Promise<RawShelterData[]> {
     const data = XLSX.utils.sheet_to_json(worksheet);
     
     // 데이터 정규화
-    return data.map((row: any) => {
+    return data.map((row: Record<string, unknown>) => {
       const normalizedRow: RawShelterData = {};
       
       // 컬럼명 매핑

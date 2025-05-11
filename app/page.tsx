@@ -3,7 +3,7 @@
 import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
 import { useState, useCallback, useEffect } from 'react';
 import { AEDLocation, parseCSV } from '@/lib/utils';
-import { Search, MapPin, Heart, Info } from 'lucide-react';
+import { MapPin, Heart, Info } from 'lucide-react';
 
 const containerStyle = {
   width: '100%',
@@ -21,10 +21,8 @@ export default function Home() {
   const [selectedLocation, setSelectedLocation] = useState<AEDLocation | null>(null);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [showAED, setShowAED] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [showShelter, setShowShelter] = useState(false);
-  const [shelterLocations, setShelterLocations] = useState<any[]>([]);
+  const [shelterLocations, setShelterLocations] = useState<{ name: string; address: string; lat: number; lng: number }[]>([]);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -92,10 +90,6 @@ export default function Home() {
   );
 
   // 대피소/소화기 마커 예시 좌표 (실제 데이터 연동 전 임시)
-  const shelterMarkers = [
-    { lat: 37.5705, lng: 126.982, name: '대피소 예시1' },
-    { lat: 37.565, lng: 126.976, name: '대피소 예시2' },
-  ];
   const extinguisherMarkers = [
     { lat: 37.567, lng: 126.98, name: '소화기 예시1' },
     { lat: 37.563, lng: 126.974, name: '소화기 예시2' },
@@ -115,19 +109,19 @@ export default function Home() {
   return (
     <div className="w-full h-screen flex flex-col">
       {/* 네비게이션 바 */}
-      <nav className="h-16 bg-white shadow-md flex items-center px-4 gap-4">
-        <div className="flex items-center gap-2 mr-6">
+      <nav className="h-auto min-h-20 bg-white shadow-md flex flex-wrap items-center px-2 gap-2 sm:gap-4 sm:px-4 overflow-x-auto">
+        <div className="flex items-center gap-1 sm:gap-2 mr-2 sm:mr-6">
           <Heart className="w-6 h-6 text-red-500" />
-          <h1 className="text-2xl font-extrabold text-black">안전 지도</h1>
+          <h1 className="text-lg sm:text-2xl font-extrabold text-black">안전 지도</h1>
         </div>
         <button
           onClick={getCurrentLocation}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold"
+          className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold text-sm"
         >
           <MapPin className="w-4 h-4" />
           <span>현재 위치</span>
         </button>
-        <label className="flex items-center gap-2 px-4 py-2 ml-2 bg-white border-2 border-blue-500 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors font-semibold">
+        <label className="flex items-center gap-1 px-2 py-1 ml-2 bg-white border-2 border-blue-500 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors font-semibold text-sm">
           <input
             type="checkbox"
             checked={showAED}
@@ -136,7 +130,7 @@ export default function Home() {
           />
           <span className="text-blue-700">AED</span>
         </label>
-        <label className="flex items-center gap-2 px-4 py-2 ml-2 bg-white border-2 border-green-500 rounded-lg cursor-pointer hover:bg-green-50 transition-colors font-semibold">
+        <label className="flex items-center gap-1 px-2 py-1 ml-2 bg-white border-2 border-green-500 rounded-lg cursor-pointer hover:bg-green-50 transition-colors font-semibold text-sm">
           <input
             type="checkbox"
             checked={showShelter}
@@ -145,7 +139,7 @@ export default function Home() {
           />
           <span className="text-green-700">대피소</span>
         </label>
-        <label className="flex items-center gap-2 px-4 py-2 ml-2 bg-white border-2 border-red-500 rounded-lg cursor-pointer hover:bg-red-50 transition-colors font-semibold opacity-60">
+        <label className="flex items-center gap-1 px-2 py-1 ml-2 bg-white border-2 border-red-500 rounded-lg cursor-pointer hover:bg-red-50 transition-colors font-semibold opacity-60 text-sm">
           <input
             type="checkbox"
             disabled
@@ -153,7 +147,7 @@ export default function Home() {
           />
           <span className="text-red-700">소화기</span>
         </label>
-        <label className="flex items-center gap-2 px-4 py-2 ml-2 bg-white border-2 border-purple-500 rounded-lg cursor-pointer hover:bg-purple-50 transition-colors font-semibold opacity-60">
+        <label className="flex items-center gap-1 px-2 py-1 ml-2 bg-white border-2 border-purple-500 rounded-lg cursor-pointer hover:bg-purple-50 transition-colors font-semibold opacity-60 text-sm">
           <input
             type="checkbox"
             disabled
@@ -161,7 +155,7 @@ export default function Home() {
           />
           <span className="text-purple-700">응급실</span>
         </label>
-        <label className="flex items-center gap-2 px-4 py-2 ml-2 bg-white border-2 border-gray-400 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors font-semibold opacity-60">
+        <label className="flex items-center gap-1 px-2 py-1 ml-2 bg-white border-2 border-gray-400 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors font-semibold opacity-60 text-sm">
           <input
             type="checkbox"
             disabled

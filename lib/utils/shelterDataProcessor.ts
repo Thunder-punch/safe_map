@@ -34,10 +34,10 @@ function extractTypeFromFileName(fileName: string): ShelterType {
 }
 
 // 컬럼명으로 값 찾기
-function findValueByColumnNames(data: RawShelterData, columnNames: string[]): any {
+function findValueByColumnNames(data: RawShelterData, columnNames: string[]): string | number | string[] | undefined {
   for (const name of columnNames) {
     if (data[name] !== undefined && data[name] !== null && data[name] !== '') {
-      return data[name];
+      return data[name] as string | number | string[];
     }
   }
   return undefined;
@@ -45,8 +45,12 @@ function findValueByColumnNames(data: RawShelterData, columnNames: string[]): an
 
 // 좌표 정보 처리
 function extractLocation(data: RawShelterData): { lat: number; lng: number } | null {
-  const lat = findValueByColumnNames(data, COLUMN_MAPPINGS.lat);
-  const lng = findValueByColumnNames(data, COLUMN_MAPPINGS.lng);
+  let lat = findValueByColumnNames(data, COLUMN_MAPPINGS.lat);
+  let lng = findValueByColumnNames(data, COLUMN_MAPPINGS.lng);
+
+  // string[]일 경우 첫 번째 값만 사용
+  if (Array.isArray(lat)) lat = lat[0];
+  if (Array.isArray(lng)) lng = lng[0];
 
   if (!lat || !lng) return null;
 
@@ -82,19 +86,29 @@ export function normalizeShelterData(rawData: RawShelterData, fileName: string):
     return {};
   }
 
+  // 타입 가드 및 변환
+  const nameStr = Array.isArray(name) ? name[0] : String(name);
+  const addressStr = Array.isArray(address) ? address[0] : String(address);
+  const capacityVal = findValueByColumnNames(rawData, COLUMN_MAPPINGS.capacity);
+  const capacity = typeof capacityVal === 'number' ? capacityVal : (typeof capacityVal === 'string' ? parseInt(capacityVal, 10) : undefined);
+  const contactVal = findValueByColumnNames(rawData, COLUMN_MAPPINGS.contact);
+  const contact = Array.isArray(contactVal) ? contactVal[0] : (contactVal ? String(contactVal) : undefined);
+  const facilitiesVal = findValueByColumnNames(rawData, COLUMN_MAPPINGS.facilities);
+  const facilities = Array.isArray(facilitiesVal) ? facilitiesVal : (typeof facilitiesVal === 'string' ? [facilitiesVal] : undefined);
+
   const normalized: Partial<Shelter> = {
     id: uuidv4(),
-    name: name.toString().trim(),
-    address: normalizeAddress(address.toString()),
+    name: nameStr.trim(),
+    address: normalizeAddress(addressStr),
     type: extractTypeFromFileName(fileName),
     details: {
-      capacity: findValueByColumnNames(rawData, COLUMN_MAPPINGS.capacity),
-      contact: findValueByColumnNames(rawData, COLUMN_MAPPINGS.contact),
-      facilities: findValueByColumnNames(rawData, COLUMN_MAPPINGS.facilities),
+      capacity,
+      contact,
+      facilities,
       lastUpdated: new Date()
     },
     source: {
-      region: extractRegion(address.toString()),
+      region: extractRegion(addressStr),
       originalFile: fileName,
       lastUpdated: new Date()
     }

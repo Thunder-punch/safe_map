@@ -76,3 +76,6 @@ data/raw_data/
 *.xlsx
 *.xls
 *.zip
+
+# Local Netlify folder
+.netlify

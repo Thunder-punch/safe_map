@@ -14,7 +14,6 @@ export interface AEDLocation {
 
 export const parseCSV = (csvText: string): AEDLocation[] => {
   const lines = csvText.split('\n');
-  const headers = lines[0].split(',');
   return lines.slice(1).map(line => {
     const values = line.split(',');
     return {

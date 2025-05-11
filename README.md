@@ -2,6 +2,18 @@
 
 안전한 도시를 위한 AED(자동제세동기) 위치 안내 서비스입니다. Google Maps API를 활용하여 사용자 주변의 AED 위치를 쉽게 찾을 수 있도록 도와줍니다.
 
+> **진행 현황**
+> - 웹사이트를 Netlify에 배포 완료 (https://safemap.netlify.app)
+> - PWA(Progressive Web App) 적용 및 manifest, 아이콘, 서비스워커 설정 완료
+> - 모바일/데스크탑 반응형 UI 개선
+> - 모바일에서 홈화면 추가(PWA 설치) 가능, 아이콘 정상 노출
+> - 앱 마켓(구글 플레이 등) 등록 준비 단계
+> - iOS/안드로이드 PWA 설치 안내문구 및 네이티브 패키징(필요시) 예정
+
+> **배포 계획**
+> - 본 프로젝트는 웹사이트를 먼저 배포한 후, 웹앱(PWA/하이브리드 앱 등)으로 패키징하여 앱 마켓(구글 플레이, 앱스토어 등)에 등록할 예정입니다.
+> - 즉, **웹사이트 우선 배포 → 앱 패키징 및 마켓 등록** 순서로 진행합니다.
+
 ## 저장소 정보
 
 - **GitHub**: [Thunder-punch/safe_map](https://github.com/Thunder-punch/safe_map)
@@ -54,7 +66,7 @@
 - **버전 관리**: Git
 
 ### 배포
-- **호스팅**: Vercel
+- **호스팅**: Netlify
 - **CI/CD**: GitHub Actions
 
 ## 데이터 처리
@@ -123,37 +135,4 @@ flowchart TD
 - Google Maps API 키
 
 ### 설치
-```bash
-# 저장소 클론
-git clone [repository-url]
-
-# 의존성 설치
-npm install
-
-# 개발 서버 실행
-npm run dev
 ```
-
-### 환경 변수 설정
-`.env.local` 파일을 생성하고 다음 변수를 설정하세요:
-```
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-```
-
-## 기여하기
-
-1. 이슈를 생성하거나 기존 이슈를 확인합니다.
-2. 새로운 브랜치를 생성합니다 (`feature/your-feature-name`)
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. 코드를 수정하고 커밋합니다.
-   ```bash
-   git add .
-   git commit -m "설명"
-   ```
-4. 원격 저장소에 푸시합니다.
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-5. GitHub에서 Pull Request(PR)를 생성하여 코드 리뷰 및 병합을 요청합니다.

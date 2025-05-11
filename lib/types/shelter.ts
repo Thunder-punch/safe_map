@@ -28,5 +28,5 @@ export interface Shelter {
 }
 
 export interface RawShelterData {
-  [key: string]: any;  // 원본 데이터의 다양한 형식을 수용
+  [key: string]: unknown;  // 원본 데이터의 다양한 형식을 수용
 } 
