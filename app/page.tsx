@@ -4,6 +4,8 @@ import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-map
 import { useState, useCallback, useEffect } from 'react';
 import { AEDLocation, parseCSV } from '@/lib/utils';
 import { MapPin, Heart, Info } from 'lucide-react';
+import Papa from "papaparse";
+import type { ParseResult } from "papaparse";
 
 const containerStyle = {
   width: '100%',
@@ -22,9 +24,12 @@ export default function Home() {
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [showAED, setShowAED] = useState(true);
   const [showShelter, setShowShelter] = useState(false);
+  const [showExtinguisher, setShowExtinguisher] = useState(false);
+  const [showER, setShowER] = useState(false);
   const [shelterLocations, setShelterLocations] = useState<{ name: string; address: string; lat: number; lng: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [erLocations, setErLocations] = useState<any[]>([]);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -59,6 +64,29 @@ export default function Home() {
         }).filter(s => !isNaN(s.lat) && !isNaN(s.lng));
         setShelterLocations(shelters);
       });
+    // 응급실 데이터 fetch
+    fetch('/서울시_응급실_위치_정보.csv')
+      .then(res => res.text())
+      .then(text => {
+        Papa.parse(text, {
+          header: true,
+          complete: (result: ParseResult<any>) => {
+            const data = result.data as any[];
+            const parsed = data.map(row => ({
+              name: row['기관명'],
+              address: row['주소'],
+              lat: parseFloat(row['병원위도']),
+              lng: parseFloat(row['병원경도']),
+              tel: row['대표전화1'],
+            })).filter(loc =>
+              !isNaN(loc.lat) && !isNaN(loc.lng) &&
+              loc.lat >= 33 && loc.lat <= 39 &&
+              loc.lng >= 124 && loc.lng <= 132
+            );
+            setErLocations(parsed);
+          }
+        });
+      });
   }, []);
 
   const onLoad = useCallback((map: google.maps.Map) => {
@@ -90,12 +118,6 @@ export default function Home() {
     location.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     location.address.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  // 대피소/소화기 마커 예시 좌표 (실제 데이터 연동 전 임시)
-  const extinguisherMarkers = [
-    { lat: 37.567, lng: 126.98, name: '소화기 예시1' },
-    { lat: 37.563, lng: 126.974, name: '소화기 예시2' },
-  ];
 
   if (!isLoaded) {
     return (
@@ -141,18 +163,20 @@ export default function Home() {
           />
           <span className="text-green-700">대피소</span>
         </label>
-        <label className="flex items-center gap-1 px-2 py-1 ml-2 bg-white border-2 border-red-500 rounded-lg cursor-pointer hover:bg-red-50 transition-colors font-semibold opacity-60 text-sm">
+        <label className="flex items-center gap-1 px-2 py-1 ml-2 bg-white border-2 border-red-500 rounded-lg cursor-pointer hover:bg-red-50 transition-colors font-semibold text-sm">
           <input
             type="checkbox"
-            disabled
+            checked={showExtinguisher}
+            onChange={() => setShowExtinguisher(v => !v)}
             className="w-4 h-4 text-red-500 accent-red-500"
           />
           <span className="text-red-700">소화기</span>
         </label>
-        <label className="flex items-center gap-1 px-2 py-1 ml-2 bg-white border-2 border-purple-500 rounded-lg cursor-pointer hover:bg-purple-50 transition-colors font-semibold opacity-60 text-sm">
+        <label className="flex items-center gap-1 px-2 py-1 ml-2 bg-white border-2 border-purple-500 rounded-lg cursor-pointer hover:bg-purple-50 transition-colors font-semibold text-sm">
           <input
             type="checkbox"
-            disabled
+            checked={showER}
+            onChange={() => setShowER(v => !v)}
             className="w-4 h-4 text-purple-500 accent-purple-500"
           />
           <span className="text-purple-700">응급실</span>
@@ -225,21 +249,24 @@ export default function Home() {
                 }
               />
             ))}
-            {/* 소화기 마커 예시 */}
-            {extinguisherMarkers.map((marker, idx) => (
+            {/* 응급실 마커 */}
+            {showER && erLocations.map((location, idx) => (
               <Marker
-                key={`extinguisher-${idx}`}
-                position={{ lat: marker.lat, lng: marker.lng }}
+                key={`er-${idx}`}
+                position={{ lat: location.lat, lng: location.lng }}
                 icon={
                   isLoaded && window.google
                     ? {
-                        url: '/fire_extinguisher.svg',
+                        url: '/emergency_room.svg',
                         scaledSize: new window.google.maps.Size(32, 32)
                       }
                     : undefined
                 }
+                onClick={() => setSelectedLocation(location)}
               />
             ))}
+            {/* 소화기 마커 예시 완전 제거 (실제 데이터 연동 시 아래에 추가) */}
+            {/* {showExtinguisher && extinguisherMarkers.map(...)} */}
 
             {selectedLocation && (
               <InfoWindow
@@ -249,10 +276,11 @@ export default function Home() {
                 <div className="p-3 max-w-xs">
                   <h3 className="font-bold text-lg mb-2">{selectedLocation.name}</h3>
                   <p className="text-gray-600 text-sm mb-2">{selectedLocation.address}</p>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Info className="w-4 h-4" />
-                    <span>24시간 운영</span>
-                  </div>
+                  {(selectedLocation as any).tel && (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span>대표전화: {(selectedLocation as any).tel}</span>
+                    </div>
+                  )}
                 </div>
               </InfoWindow>
             )}
