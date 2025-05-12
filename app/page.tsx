@@ -23,6 +23,8 @@ export default function Home() {
   const [showAED, setShowAED] = useState(true);
   const [showShelter, setShowShelter] = useState(false);
   const [shelterLocations, setShelterLocations] = useState<{ name: string; address: string; lat: number; lng: number }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -166,7 +168,7 @@ export default function Home() {
       </nav>
 
       {/* 메인 컨텐츠 */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         {isLoading ? (
           <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
             <div className="text-center">
@@ -176,12 +178,13 @@ export default function Home() {
           </div>
         ) : (
           <GoogleMap
-            mapContainerStyle={containerStyle}
+            mapContainerStyle={{ width: '100%', height: '100%' }}
             center={center}
             zoom={15}
             onLoad={onLoad}
             onUnmount={onUnmount}
             options={{
+              gestureHandling: 'greedy',
               styles: [
                 {
                   featureType: "poi",

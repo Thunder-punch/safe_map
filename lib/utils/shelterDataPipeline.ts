@@ -32,7 +32,7 @@ async function parseXLSXFile(filePath: string): Promise<RawShelterData[]> {
     const worksheet = workbook.Sheets[sheetName];
     
     // XLSX를 JSON으로 변환
-    const data = XLSX.utils.sheet_to_json(worksheet);
+    const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
     
     // 데이터 정규화
     return data.map((row: Record<string, unknown>) => {
